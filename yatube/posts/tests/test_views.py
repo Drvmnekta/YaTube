@@ -299,7 +299,10 @@ class PostPagesTest(TestCase):
             ).exists()
         )
         self.assertEqual(
-            Follow.objects.filter(user=self.user_no_posts).count(), follow_count + 1)
+            Follow.objects.filter(
+                user=self.user_no_posts).count(),
+                follow_count + 1
+            )
 
     def test_user_can_unfollow(self):
         """Авторизованный пользователь может удалять из подписок"""
