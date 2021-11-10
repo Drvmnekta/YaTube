@@ -1,3 +1,4 @@
+from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
@@ -69,30 +70,21 @@ def follow_index(request):
 
 @login_required
 def profile_follow(request, username):
-    follower = request.user
     author = get_object_or_404(User, username=username)
-    follow_count = Follow.objects.filter(
-        user=follower,
+    Follow.objects.get_or_create(
+        user=request.user,
         author=author
-    ).count()
-    if follow_count == 0 and follower != author:
-        Follow.objects.create(
-            author=author,
-            user=follower
-        )
+    )
     return redirect('posts:profile', username=username)
 
 
 @login_required
 def profile_unfollow(request, username):
-    follower = request.user
     following = get_object_or_404(User, username=username)
-    if following not in follower.following.all() and follower != following:
-        get_object_or_404(
-            Follow,
-            author=following,
-            user=follower
-        ).delete()
+    Follow.objects.filter(
+        user=request.user,
+        author=following
+    ).delete()
     return redirect('posts:profile', username=username)
 
 
@@ -157,6 +149,6 @@ def add_comment(request, post_id):
     if form.is_valid():
         comment = form.save(commit=False)
         comment.author = request.user
-        comment.post = Post.objects.get(pk=post_id)
+        comment.post = get_object_or_404(Post, pk=post_id)
         comment.save()
     return redirect('posts:post_detail', post_id=post_id)

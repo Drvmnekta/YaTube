@@ -42,12 +42,12 @@ class PostPagesTest(TestCase):
             title='Тестовая группа',
             slug='test_slug'
         )
-        cls.posts = Post.objects.bulk_create([
+        Post.objects.bulk_create([
             Post(
                 text=f'Тестовый пост {x}',
                 author=cls.user,
                 group=cls.group,
-                pk=x)
+            )
             for x in range(12)
         ])
         small_gif = (
@@ -69,6 +69,7 @@ class PostPagesTest(TestCase):
             group=cls.group,
             image=uploaded
         )
+        cls.posts = Post.objects.all()[:13]
 
     @classmethod
     def tearDownClass(cls):
@@ -288,6 +289,7 @@ class PostPagesTest(TestCase):
 
     def test_user_can_follow(self):
         """Авторизованный пользователь может подписываться на других"""
+        follow_count = Follow.objects.filter(user=self.user_no_posts).count()
         self.authorized_client_no_posts.get(reverse(
             'posts:profile_follow', kwargs={'username': self.user.username}))
         self.assertTrue(
@@ -296,6 +298,8 @@ class PostPagesTest(TestCase):
                 user=self.user_no_posts
             ).exists()
         )
+        self.assertEqual(
+            Follow.objects.filter(user=self.user_no_posts).count(), follow_count + 1)
 
     def test_user_can_unfollow(self):
         """Авторизованный пользователь может удалять из подписок"""

@@ -3,6 +3,7 @@ from http import HTTPStatus
 from django.contrib.auth import get_user_model
 from django.test import Client
 from django.test.testcases import TestCase
+from django.urls import reverse
 
 from posts.models import Group, Post
 
@@ -50,7 +51,10 @@ class StaticURLTests(TestCase):
     def test_post_create_unavaliable_for_guest(self):
         """Страница создания поста недоступна анонимному"""
         response = self.guest_client.get('/create/', follow=True)
-        self.assertRedirects(response, '/auth/login/?next=/create/')
+        reverse_login = reverse('users:login')
+        reverse_create = reverse('posts:post_create')
+        self.assertRedirects(
+            response, f'{reverse_login}?next={reverse_create}')
 
     def test_post_edit_avaliable_for_author(self):
         """Страница редактирования поста доступна автору"""
@@ -66,6 +70,19 @@ class StaticURLTests(TestCase):
         )
         self.assertRedirects(response, f'/posts/{self.post.pk}')
 
+    def test_follow_index_avaliable_for_authenticated(self):
+        """Страница избранных авторов доступна авторизованному"""
+        response = self.authorized_client.get(reverse('posts:follow_index'))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_follow_index_unavaliable_for_guest(self):
+        """Страница избранных авторов недоступна гостю"""
+        response = self.guest_client.get(reverse('posts:follow_index'))
+        reverse_login = reverse('users:login')
+        reverse_follow_index = reverse('posts:follow_index')
+        self.assertRedirects(
+            response, f'{reverse_login}?next={reverse_follow_index}')
+
     def test_unexisting_page_404(self):
         """Несуществующая страница возвращает 404"""
         response = self.guest_client.get('unexisting_page/')
@@ -79,7 +96,8 @@ class StaticURLTests(TestCase):
             f'/profile/{self.author.username}/': 'posts/profile.html',
             f'/posts/{self.post.pk}': 'posts/post_detail.html',
             '/create/': 'posts/create_post.html',
-            f'/posts/{self.post.pk}/edit/': 'posts/create_post.html'
+            f'/posts/{self.post.pk}/edit/': 'posts/create_post.html',
+            '/follow/': 'posts/follow.html'
         }
         for adress, template in templates_urls.items():
             with self.subTest(adress=adress):
