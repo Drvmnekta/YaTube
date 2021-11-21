@@ -9,8 +9,6 @@
     <h1>
       Последние обновления на сайте
     </h1>
-    {% load cache %}
-    {% cache 20 index_page %}
     {% for post in page_obj %}   
       {% include 'posts/includes/post_list.html' %}     
       {% if post.group != None %}
@@ -19,6 +17,5 @@
       {% if not forloop.last %}<hr>{% endif %}
     {% endfor %}
     {% include 'posts/includes/paginator.html' %}
-    {% endcache %}
   </div>  
 {% endblock %}

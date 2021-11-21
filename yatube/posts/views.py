@@ -1,6 +1,8 @@
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
+# from django.core.cache import cache
+from django.views.decorators.cache import cache_page
 
 from yatube.settings import PAGINATION_NUM
 
@@ -15,8 +17,13 @@ def pagination(request, post_list, num_on_page):
     return page_obj
 
 
+@cache_page(60 * 15)
 def index(request):
     template = 'posts/index.html'
+#   post_list = cache.get('index_page')
+#    if post_list is None:
+#        post_list = Post.objects.all()
+#        cache.set('index_page', post_list, timeout=20)
     post_list = Post.objects.all()
     page_obj = pagination(request, post_list, PAGINATION_NUM)
     context = {
