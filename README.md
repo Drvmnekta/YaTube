@@ -14,6 +14,7 @@
 - CSS (Bootstrap 3)
 - Djangorestframework-simplejwt 4.7.2
 - Pillow 8.3.1
+- sorl-thumbnail 12.7.0
 
 
 ### Как запустить проект:
