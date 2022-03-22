@@ -8,10 +8,12 @@
 ```
 
 ### Технологии:
-- Python
-- Django framework
+- Python 3.9
+- Django framework 2.2.16
 - HTML
 - CSS (Bootstrap 3)
+- Djangorestframework-simplejwt 4.7.2
+- Pillow 8.3.1
 
 
 ### Как запустить проект:
