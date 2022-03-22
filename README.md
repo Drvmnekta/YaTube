@@ -13,11 +13,11 @@
 Клонировать репозиторий и перейти в него в командной строке:
 
 ```
-git clone https://github.com/Drvmnekta/hw05_final.git
+git clone https://github.com/Drvmnekta/YaTube.git
 ```
 
 ```
-cd hw05_final
+cd YaTube
 ```
 
 Cоздать и активировать виртуальное окружение:
