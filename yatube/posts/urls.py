@@ -1,6 +1,8 @@
+"""Module with urls of posts app."""
+
 from django.urls import path
 
-from . import views
+from yatube.posts import views
 
 app_name = 'posts'
 

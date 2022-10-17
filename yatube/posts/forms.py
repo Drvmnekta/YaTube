@@ -1,11 +1,16 @@
+"""Module with forms."""
+
 from django import forms
 
-from .models import Comment, Post
+from yatube.posts.models import Comment, Post
 
 
 class PostForm(forms.ModelForm):
+    """Class of Post form."""
 
     class Meta:
+        """Meta-class for PostForm class."""
+
         model = Post
         fields = ('text', 'group', 'image')
         labels = {
@@ -16,8 +21,11 @@ class PostForm(forms.ModelForm):
 
 
 class CommentForm(forms.ModelForm):
+    """Class of Comment form."""
 
     class Meta:
+        """Meta-class for CommentForm class."""
+
         model = Comment
         fields = {'text'}
         labels = {

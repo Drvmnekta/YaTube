@@ -1,5 +1,9 @@
+"""Module with views of posts app."""
+
 from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, Page
+from django.db.models.query import QuerySet
+from django.http import HttpResponse, HttpRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 # from django.core.cache import cache
 from django.views.decorators.cache import cache_page
@@ -10,7 +14,19 @@ from .forms import CommentForm, PostForm
 from .models import Follow, Group, Post, User
 
 
-def pagination(request, post_list, num_on_page):
+def pagination(
+    request: HttpRequest, post_list: QuerySet, num_on_page: int,
+    ) -> Page:
+    """Get paginated page.
+    
+    Args:
+        request: the current request;
+        post_list: post objects to paginate;
+        num_on_page: amount of objects on page.
+    
+    Returns:
+        paginated page.
+    """
     paginator = Paginator(post_list, num_on_page)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -18,7 +34,8 @@ def pagination(request, post_list, num_on_page):
 
 
 @cache_page(60 * 15)
-def index(request):
+def index(request: HttpRequest) -> HttpResponse:
+    """View-function of main page."""
     template = 'posts/index.html'
 #   post_list = cache.get('index_page')
 #    if post_list is None:
@@ -32,7 +49,16 @@ def index(request):
     return render(request, template, context)
 
 
-def group_posts(request, slug):
+def group_posts(request: HttpRequest, slug: str) -> HttpResponse:
+    """View-function of page with posts of exact group.
+    
+    Args:
+        request: HttpRequest from user;
+        slug: slug of the group to view posts of.
+    
+    Returns:
+        HttpResponse of group posts page.
+    """
     template = 'posts/group_list.html'
     group = get_object_or_404(Group, slug=slug)
     post_list = group.posts.all()
@@ -44,7 +70,16 @@ def group_posts(request, slug):
     return render(request, template, context)
 
 
-def profile(request, username):
+def profile(request: HttpRequest, username: str) -> HttpResponse:
+    """View of profile pgae.
+    
+    Args:
+        request: HttpRequest from user;
+        username: username of the profile to view.
+
+    Returns:
+        HttpResponse of profile page.
+    """
     template = 'posts/profile.html'
     author = get_object_or_404(User, username=username)
     following = False
@@ -64,7 +99,8 @@ def profile(request, username):
 
 
 @login_required
-def follow_index(request):
+def follow_index(request: HttpRequest) -> HttpResponse:
+    """View of the page with all subscriptions."""
     template = 'posts/follow.html'
     post_list = Post.objects.filter(author__following__user=request.user)
     page_obj = pagination(request, post_list, PAGINATION_NUM)
@@ -75,7 +111,18 @@ def follow_index(request):
 
 
 @login_required
-def profile_follow(request, username):
+def profile_follow(
+    request: HttpRequest, username: str,
+    ) -> HttpResponseRedirect:
+    """View to follow user.
+    
+    Args:
+        request: HttpRequest from user;
+        username: username of the profile to follow.
+    
+    Returns:
+        redirect to profile page of followed user.
+    """
     author = get_object_or_404(User, username=username)
     if request.user != author:
         Follow.objects.get_or_create(
@@ -86,7 +133,18 @@ def profile_follow(request, username):
 
 
 @login_required
-def profile_unfollow(request, username):
+def profile_unfollow(
+    request: HttpRequest, username: str,
+    ) -> HttpResponseRedirect:
+    """View to unfollow user.
+    
+    Args:
+        request: HttpRequest from user;
+        username: username of the profile to unfollow.
+    
+    Returns:
+        redirect to profile page of unfollowed user.
+    """
     following = get_object_or_404(User, username=username)
     Follow.objects.filter(
         user=request.user,
@@ -95,7 +153,8 @@ def profile_unfollow(request, username):
     return redirect('posts:profile', username=username)
 
 
-def post_detail(request, post_id):
+def post_detail(request: HttpRequest, post_id: int) -> HttpResponse:
+    """View of the page with post details."""
     template = 'posts/post_detail.html'
     post = get_object_or_404(Post, pk=post_id)
     posts_num = post.author.posts.count()
@@ -111,7 +170,8 @@ def post_detail(request, post_id):
 
 
 @login_required
-def post_create(request):
+def post_create(request: HttpRequest) -> HttpResponseRedirect:
+    """View of post creation."""
     groups = Group.objects.all()
     form = PostForm(
         request.POST or None,
@@ -130,7 +190,8 @@ def post_create(request):
 
 
 @login_required
-def post_edit(request, post_id):
+def post_edit(request: HttpRequest, post_id: int) -> HttpResponseRedirect:
+    """View of post updation."""
     post = get_object_or_404(Post, pk=post_id)
     if request.user != post.author:
         return redirect('posts:post_detail', post_id=post_id)
@@ -151,7 +212,8 @@ def post_edit(request, post_id):
 
 
 @login_required
-def add_comment(request, post_id):
+def add_comment(request: HttpRequest, post_id: int) -> HttpResponseRedirect:
+    """View of comment creation."""
     form = CommentForm(request.POST or None)
     if form.is_valid():
         comment = form.save(commit=False)
